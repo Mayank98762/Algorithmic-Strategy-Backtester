@@ -24,7 +24,7 @@ st.set_page_config(
 )
 
 # Title and description
-st.title("📈 Algorithmic Trading Strategy Backtester")
+st.title("Algorithmic Trading Strategy Backtester")
 st.markdown("""
 Test trading strategies on historical stock data. Select a strategy, configure parameters, 
 and see how it would have performed!
@@ -35,7 +35,7 @@ data_feed = DataFeed()
 
 # Sidebar for data configuration
 with st.sidebar:
-    st.header("📊 Data Configuration")
+    st.header("Data Configuration")
     
     # Ticker selection
     st.subheader("1. Select Stock")
@@ -93,13 +93,13 @@ with st.sidebar:
     
     # Fetch data button
     st.subheader("3. Fetch Data")
-    fetch_button = st.button("🚀 Fetch Historical Data", type="primary", use_container_width=True)
+    fetch_button = st.button("Fetch Historical Data", type="primary", use_container_width=True)
     
     st.divider()
     
     # Strategy Configuration (only show if data is loaded)
     if 'data' in st.session_state:
-        st.header("🎯 Strategy Configuration")
+        st.header("Strategy Configuration")
         
         # Strategy selection
         st.subheader("4. Select Strategy")
@@ -154,7 +154,7 @@ with st.sidebar:
         
         # Run backtest button
         st.subheader("7. Run Backtest")
-        backtest_button = st.button("🚀 Run Backtest", type="primary", use_container_width=True)
+        backtest_button = st.button("Run Backtest", type="primary", use_container_width=True)
         
         st.divider()
         st.caption(f"Market Status: **{get_market_hours_status()}** (NYSE)")
@@ -218,7 +218,7 @@ if 'backtest_results' in st.session_state:
     ticker = st.session_state['ticker']
     data = st.session_state['data']
     
-    st.header(f"📊 Backtest Results: {strategy_name} on {ticker}")
+    st.header(f"Backtest Results: {strategy_name} on {ticker}")
     
     # Performance Metrics Dashboard
     st.subheader("Performance Metrics")
@@ -434,20 +434,20 @@ if 'backtest_results' in st.session_state:
     
     # Trade Log
     if not trades.empty:
-        with st.expander("📋 Detailed Trade Log"):
+        with st.expander("Detailed Trade Log"):
             st.dataframe(trades, use_container_width=True)
             
             # Download trades as CSV
             csv = trades.to_csv()
             st.download_button(
-                label="📥 Download Trade Log as CSV",
+                label="Download Trade Log as CSV",
                 data=csv,
                 file_name=f"{ticker}_{strategy_name}_trades.csv",
                 mime="text/csv"
             )
     
     # Monthly Returns Heatmap
-    st.subheader("📅 Monthly Returns Heatmap")
+    st.subheader("Monthly Returns Heatmap")
     
     portfolio_returns = portfolio['Returns'].copy()
     portfolio_returns.index = pd.to_datetime(portfolio_returns.index)
@@ -492,7 +492,7 @@ if 'backtest_results' in st.session_state:
         st.plotly_chart(fig_heatmap, use_container_width=True)
     
     # Export full results
-    st.subheader("📥 Export Results")
+    st.subheader("Export Results")
     col_export1, col_export2 = st.columns(2)
     
     with col_export1:
@@ -515,13 +515,13 @@ if 'backtest_results' in st.session_state:
         )
 
 elif 'data' in st.session_state:
-    st.info("✅ Data loaded! Use the sidebar to select a strategy and run the backtest.")
+    st.info("Data loaded! Use the sidebar to select a strategy and run the backtest.")
     
     # Show data summary
     data = st.session_state['data']
     ticker = st.session_state['ticker']
     
-    st.subheader(f"📈 {ticker} - Data Overview")
+    st.subheader(f"{ticker} - Data Overview")
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
