@@ -460,7 +460,7 @@ if 'backtest_results' in st.session_state:
     portfolio_returns = portfolio['Returns'].copy()
     portfolio_returns.index = pd.to_datetime(portfolio_returns.index)
     
-    monthly_returns = portfolio_returns.resample('M').apply(
+    monthly_returns = portfolio_returns.resample('ME').apply(
         lambda x: (1 + x).prod() - 1
     )
     
