@@ -3,7 +3,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-
+import streamlit as st
 
 class DataFeed:
     """
@@ -47,30 +47,38 @@ class DataFeed:
             self.end_date = end_date
             
             # Show a progress indicator (useful for Streamlit)
-            # Download data from yfinance
-            stock = yf.Ticker(ticker)
-            self.data = stock.history(start=start_date, end=end_date)
-
-            if self.data.empty:
-                return None
-
-            # Add additional useful columns
-            self.data['Returns'] = self.data['Close'].pct_change()
-            self.data['Log_Returns'] = np.log(self.data['Close'] / self.data['Close'].shift(1))
-            self.data['Day'] = self.data.index.day
-            self.data['Month'] = self.data.index.month
-            self.data['Year'] = self.data.index.year
-            self.data['Day_of_Week'] = self.data.index.dayofweek
-
-            self.data['SMA_20'] = self.data['Close'].rolling(window=20).mean()
-            self.data['SMA_50'] = self.data['Close'].rolling(window=50).mean()
-            self.data['SMA_200'] = self.data['Close'].rolling(window=200).mean()
-            self.data['Volume_SMA'] = self.data['Volume'].rolling(window=20).mean()
-            self.data['Volatility'] = self.data['Returns'].rolling(window=20).std() * np.sqrt(252)
-
-            return self.data
+            with st.spinner(f'Fetching data for {ticker}...'):
+                # Download data from yfinance
+                stock = yf.Ticker(ticker)
+                self.data = stock.history(start=start_date, end=end_date)
+                
+                # Check if data is empty
+                if self.data.empty:
+                    st.error(f"No data found for ticker '{ticker}'. Please check the symbol and try again.")
+                    return None
+                
+                # Add additional useful columns
+                self.data['Returns'] = self.data['Close'].pct_change()
+                self.data['Log_Returns'] = np.log(self.data['Close'] / self.data['Close'].shift(1))
+                self.data['Day'] = self.data.index.day
+                self.data['Month'] = self.data.index.month
+                self.data['Year'] = self.data.index.year
+                self.data['Day_of_Week'] = self.data.index.dayofweek  # 0=Monday, 6=Sunday
+                
+                # Add rolling statistics (useful for strategies)
+                self.data['SMA_20'] = self.data['Close'].rolling(window=20).mean()
+                self.data['SMA_50'] = self.data['Close'].rolling(window=50).mean()
+                self.data['SMA_200'] = self.data['Close'].rolling(window=200).mean()
+                self.data['Volume_SMA'] = self.data['Volume'].rolling(window=20).mean()
+                
+                # Add volatility (20-day rolling standard deviation of returns)
+                self.data['Volatility'] = self.data['Returns'].rolling(window=20).std() * np.sqrt(252)
+                
+                st.success(f"Successfully fetched {len(self.data)} days of data for {ticker}")
+                return self.data
                 
         except Exception as e:
+            st.error(f"Error fetching data: {str(e)}")
             return None
     
     def get_data_summary(self):
@@ -170,5 +178,5 @@ class DataFeed:
             if not hist.empty:
                 return True
             return False
-        except:
+        except Exception:
             return False
