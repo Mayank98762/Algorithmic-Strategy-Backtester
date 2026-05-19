@@ -75,11 +75,24 @@ class RSIStrategy(BaseStrategy):
         self.overbought = overbought
         
     def calculate_rsi(self, prices):
-        """Calculate RSI indicator."""
+        """
+        Calculate RSI using Wilder's Smoothed Moving Average (the industry standard).
+
+        Wilder's method seeds the first average with a simple mean over the initial
+        `period` bars, then applies exponential smoothing with alpha = 1/period for
+        all subsequent bars.  This matches Bloomberg, TradingView, FactSet, and every
+        other professional platform — unlike a plain rolling SMA which diverges
+        meaningfully and produces non-comparable values.
+        """
         delta = prices.diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=self.period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=self.period).mean()
-        rs = gain / loss
+        gain = delta.where(delta > 0, 0.0)
+        loss = -delta.where(delta < 0, 0.0)
+
+        # Wilder's EMA: alpha = 1/period, equivalent to com = period - 1
+        avg_gain = gain.ewm(alpha=1 / self.period, min_periods=self.period, adjust=False).mean()
+        avg_loss = loss.ewm(alpha=1 / self.period, min_periods=self.period, adjust=False).mean()
+
+        rs = avg_gain / avg_loss
         rsi = 100 - (100 / (1 + rs))
         return rsi
     
@@ -120,13 +133,16 @@ class BollingerBandsStrategy(BaseStrategy):
         lower_band = sma - (std * self.num_std)
         
         signals = pd.Series(0, index=data.index)
-        
-        # Buy signal: price touches or goes below lower band
-        buy_signal = data['Close'] <= lower_band
+
+        # Event-based signals: fire only on the FIRST bar that touches/crosses the band,
+        # not on every subsequent bar while price remains outside.  The old state-based
+        # approach (data['Close'] <= lower_band) generated a buy signal for every
+        # consecutive bar below the band, causing the backtester to place a new order
+        # each bar and rapidly exhaust cash — misrepresenting the strategy's intent.
+        buy_signal = (data['Close'] <= lower_band) & (data['Close'].shift(1) > lower_band.shift(1))
         signals[buy_signal] = 1
-        
-        # Sell signal: price touches or goes above upper band
-        sell_signal = data['Close'] >= upper_band
+
+        sell_signal = (data['Close'] >= upper_band) & (data['Close'].shift(1) < upper_band.shift(1))
         signals[sell_signal] = -1
         
         self.signals = signals
@@ -151,12 +167,17 @@ class MomentumStrategy(BaseStrategy):
         momentum = data['Close'].pct_change(self.lookback)
         
         signals = pd.Series(0, index=data.index)
-        
-        # Buy when momentum > threshold
-        signals[momentum > self.buy_threshold] = 1
-        
-        # Sell when momentum < threshold
-        signals[momentum < self.sell_threshold] = -1
+
+        # Event-based: signal fires only when momentum CROSSES the threshold,
+        # not on every bar where it remains above/below it.  The old state-based
+        # approach triggered a new buy order on every single bar momentum stayed
+        # elevated, causing the backtester to continuously accumulate units until
+        # cash was exhausted — which is not how a momentum strategy is intended to work.
+        buy_signal = (momentum > self.buy_threshold) & (momentum.shift(1) <= self.buy_threshold)
+        signals[buy_signal] = 1
+
+        sell_signal = (momentum < self.sell_threshold) & (momentum.shift(1) >= self.sell_threshold)
+        signals[sell_signal] = -1
         
         self.signals = signals
         return signals
@@ -171,5 +192,8 @@ class BuyAndHold(BaseStrategy):
         
     def generate_signals(self, data):
         signals = pd.Series(0, index=data.index)
-        signals.iloc[0] = 1  # Buy on first day
+        # The backtester loop starts at i=1, so iloc[0] is never evaluated.
+        # Place the buy signal at iloc[1] so it is picked up on the first loop iteration.
+        if len(signals) > 1:
+            signals.iloc[1] = 1
         return signals
