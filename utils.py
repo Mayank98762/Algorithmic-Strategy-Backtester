@@ -5,15 +5,18 @@ import streamlit as st
 def format_large_number(num):
     """
     Format large numbers with K, M, B suffixes.
+    Works correctly for negative values (e.g. losses, drawdowns).
     """
-    if num >= 1e9:
-        return f"${num/1e9:.2f}B"
-    elif num >= 1e6:
-        return f"${num/1e6:.2f}M"
-    elif num >= 1e3:
-        return f"${num/1e3:.2f}K"
+    abs_num = abs(num)
+    sign = "-" if num < 0 else ""
+    if abs_num >= 1e9:
+        return f"{sign}${abs_num/1e9:.2f}B"
+    elif abs_num >= 1e6:
+        return f"{sign}${abs_num/1e6:.2f}M"
+    elif abs_num >= 1e3:
+        return f"{sign}${abs_num/1e3:.2f}K"
     else:
-        return f"${num:.2f}"
+        return f"{sign}${abs_num:.2f}"
 
 def validate_dates(start_date, end_date):
     """
