@@ -19,12 +19,11 @@ from utils import format_large_number, validate_dates, get_market_hours_status
 # Page configuration
 st.set_page_config(
     page_title="Algorithmic Trading Backtester",
-    page_icon="📈",
     layout="wide"
 )
 
 # Title and description
-st.title("📈 Algorithmic Trading Strategy Backtester")
+st.title("Algorithmic Trading Strategy Backtester")
 st.markdown("""
 Test trading strategies on historical stock data. Select a strategy, configure parameters, 
 and see how it would have performed!
@@ -35,7 +34,7 @@ data_feed = DataFeed()
 
 # Sidebar for data configuration
 with st.sidebar:
-    st.header("📊 Data Configuration")
+    st.header("Data Configuration")
     
     # Ticker selection
     st.subheader("1. Select Stock")
@@ -93,13 +92,13 @@ with st.sidebar:
     
     # Fetch data button
     st.subheader("3. Fetch Data")
-    fetch_button = st.button("🚀 Fetch Historical Data", type="primary", use_container_width=True)
+    fetch_button = st.button("Fetch Historical Data", type="primary", use_container_width=True)
     
     st.divider()
     
     # Strategy Configuration (only show if data is loaded)
     if 'data' in st.session_state:
-        st.header("🎯 Strategy Configuration")
+        st.header("Strategy Configuration")
         
         # Strategy selection
         st.subheader("4. Select Strategy")
@@ -161,7 +160,7 @@ with st.sidebar:
         
         # Run backtest button
         st.subheader("7. Run Backtest")
-        backtest_button = st.button("🚀 Run Backtest", type="primary", use_container_width=True)
+        backtest_button = st.button("Run Backtest", type="primary", use_container_width=True)
         
         st.divider()
         st.caption(f"Market Status: **{get_market_hours_status()}** (NYSE)")
@@ -227,7 +226,7 @@ if 'backtest_results' in st.session_state:
     ticker = st.session_state['ticker']
     data = st.session_state['data']
     
-    st.header(f"📊 Backtest Results: {strategy_name} on {ticker}")
+    st.header(f"Backtest Results: {strategy_name} on {ticker}")
     
     # Performance Metrics Dashboard
     st.subheader("Performance Metrics")
@@ -530,7 +529,7 @@ elif 'data' in st.session_state:
     data = st.session_state['data']
     ticker = st.session_state['ticker']
     
-    st.subheader(f"📈 {ticker} - Data Overview")
+    st.subheader(f"{ticker} - Data Overview")
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -546,7 +545,7 @@ elif 'data' in st.session_state:
     st.line_chart(data['Close'])
 
 else:
-    st.info("👈 Use the sidebar to select a stock and date range, then click 'Fetch Historical Data' to begin.")
+    st.info("Use the sidebar to select a stock and date range, then click 'Fetch Historical Data' to begin.")
 
 # Footer
 st.divider()
