@@ -60,11 +60,11 @@ class Backtester:
         portfolio = pd.DataFrame(index=data.index)
         portfolio['Close'] = data['Close']
         portfolio['Signal'] = signals
-        portfolio['Position'] = 0
-        portfolio['Cash'] = self.initial_capital
-        portfolio['Holdings'] = 0
-        portfolio['Portfolio_Value'] = self.initial_capital
-        portfolio['Returns'] = 0
+        portfolio['Position'] = 0.0
+        portfolio['Cash'] = float(self.initial_capital)
+        portfolio['Holdings'] = 0.0
+        portfolio['Portfolio_Value'] = float(self.initial_capital)
+        portfolio['Returns'] = 0.0
         portfolio['Trade_Action'] = ''
 
         trades_list = []
